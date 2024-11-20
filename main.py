@@ -1,4 +1,5 @@
 import os, csv
+import pandas as pd
 
 def zbierzInfoSale():
     sale_info = []
@@ -36,58 +37,44 @@ def wybierzSale():
 def odczytPliku(file):
     with open(file, mode='r', encoding='utf-8') as plik:
         reader = csv.reader(plik)
-        miejsca = list(reader)
+        miejsca = [list(map(int, row)) for row in reader]
     return miejsca
 
-def wyswietlMiejsca(sala):
-    print("Miejsca w sali (0-wolne, 1-zajete)")
+def wyswietlMiejsca(sala, plik=None):
+    if plik is not None:
+        wolne_miejsca = 0
+        zajete_miejsca = 0
+        df = pd.read_csv(plik, header=None)
+        
+        for i in range(df.shape[0]):
+            for j in range(df.shape[1]):
+                if sala[i][j] == 1:
+                    zajete_miejsca = zajete_miejsca + 1
+                elif sala[i][j] == 0:
+                    wolne_miejsca = wolne_miejsca + 1
+        print(f"Miejsca w sali (0-wolne/1-zajete) ({wolne_miejsca} wolnych, {zajete_miejsca} zajetych)")
+    else:
+        print("Miejsca w sali (0-wolne/1-zajete)")
     for row in sala:
         print(row)
 
 def rezerwujMiejsce():
     sala = wybierzSale()
     miejsca = odczytPliku(sala)
-    print(miejsca[0][0])
-    wyswietlMiejsca(miejsca)
+    wyswietlMiejsca(miejsca, plik=sala)
     
-    rzad = int(input("Podaj rzad miejsca ktorego chcesz zarezerwowac: "))
-    nr_miejsca = int(input("Podaj numer miejsca ktore chcesz zarezerwowac: "))
-    for _ in range(len(miejsca)):
-        for _ in range(len(miejsca)):
-            if miejsca[rzad-1][nr_miejsca-1] == 0:
-                miejsca[rzad-1][nr_miejsca-1] = 1
-                print(f"Zarezerwowales {nr_miejsca} miejsce w rzedzie {rzad}")
-                break
-            else: 
-                print(f"Miejsce {nr_miejsca} w rzedzie {rzad} jest juz zajete!")
-                break
+    rzad = int(input("Podaj rzad miejsca ktorego chcesz zarezerwowac: "))-1
+    nr_miejsca = int(input("Podaj numer miejsca ktore chcesz zarezerwowac: "))-1
 
-
-    with open(sala, mode='w', newline="", encoding="utf-8") as plik:
-        writer = csv.writer(plik)
-        writer.writerows(miejsca)
-    
-
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    if miejsca[rzad][nr_miejsca] == 0:
+        miejsca[rzad][nr_miejsca] = 1
+        print(f"Zarezerwowano miejsce {nr_miejsca+1} w rzedzie {rzad+1}")
+        
+        with open(sala, mode='w', newline="", encoding="utf-8") as plik:
+            writer = csv.writer(plik)
+            writer.writerows(miejsca)
+    else:
+        print(f"Miejsce {nr_miejsca+1} w rzedzie {rzad+1} jest zajete")
 
 while True:
     print("Opcje: [w = więcej opcji] / [z = zakończ]")
@@ -112,7 +99,9 @@ while True:
                 else:
                     print("Brak sal do wybrania ;(")
             case "m": 
-                print("sdas")
+                sala = wybierzSale()
+                miejsca = odczytPliku(sala)
+                wyswietlMiejsca(miejsca, plik=sala)
             case "r":
                 rezerwujMiejsce()
             case _:
