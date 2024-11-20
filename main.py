@@ -39,17 +39,87 @@ def odczytPliku(file):
         miejsca = list(reader)
     return miejsca
 
-"""
+def wyswietlMiejsca(sala):
+    print("Miejsca w sali (0-wolne, 1-zajete)")
+    for row in sala:
+        print(row)
+
+def rezerwujMiejsce():
+    sala = wybierzSale()
+    miejsca = odczytPliku(sala)
+    print(miejsca[0][0])
+    wyswietlMiejsca(miejsca)
+    
+    rzad = int(input("Podaj rzad miejsca ktorego chcesz zarezerwowac: "))
+    nr_miejsca = int(input("Podaj numer miejsca ktore chcesz zarezerwowac: "))
+    for _ in range(len(miejsca)):
+        for _ in range(len(miejsca)):
+            if miejsca[rzad-1][nr_miejsca-1] == 0:
+                miejsca[rzad-1][nr_miejsca-1] = 1
+                print(f"Zarezerwowales {nr_miejsca} miejsce w rzedzie {rzad}")
+                break
+            else: 
+                print(f"Miejsce {nr_miejsca} w rzedzie {rzad} jest juz zajete!")
+                break
+
+
+    with open(sala, mode='w', newline="", encoding="utf-8") as plik:
+        writer = csv.writer(plik)
+        writer.writerows(miejsca)
+    
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 while True:
-    print("Opcje: [r = rezerwuj] / [w = wyjdz]")
+    print("Opcje: [w = więcej opcji] / [z = zakończ]")
     opcja = str(input("Wybierz opcje: "))
 
-    if opcja == 'r':
-        
-        break
-    elif opcja == 'w':
+    if opcja == 'w':
+        print("Opcje do wybrania:")
+        print("- s (wyswietla sale do wybrania) ")
+        print("- m (wyswietla miejsca na sali) ")
+        print("- r (rezerwacja miejsca) ")
+        opcja2 = str(input("Wybierz opcje: "))
+        match opcja2:
+            case "s":
+                sale = zbierzInfoSale()
+                if sale != None:
+                    print("")
+                    print("------")
+                    print("Sale do wybrania:")
+                    for i in range(len(sale)):
+                        print(f"- sala {i+1}")
+                    print()
+                else:
+                    print("Brak sal do wybrania ;(")
+            case "m": 
+                print("sdas")
+            case "r":
+                rezerwujMiejsce()
+            case _:
+                print("Błędna opcja")
+
+    elif opcja == 'z':
         print("Zakonczono program")
         break 
     else: 
         print("Wpisano nie prawidłową opcje")
-"""
