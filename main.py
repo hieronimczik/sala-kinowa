@@ -27,10 +27,12 @@ def wybierzSale():
             if wybrana_wartosc in sale:
                 print(f"Wybrano sale {wybrana}")
                 return wybrana_wartosc
-            else: 
+            else:
                 print("Nie ma takiej sali")
-        except ValueError:
+                return None
+        except (ValueError, IndexError):
             print("Błędna wartość")
+            return None
     else: 
         print("Brak sal do wybrania, sprawdź czy plik z roszerzeniem '.csv' jest utworzony!")
 
@@ -63,28 +65,35 @@ def rezerwujMiejsce():
     miejsca = odczytPliku(sala)
     wyswietlMiejsca(miejsca, plik=sala)
     
+    df = pd.read_csv(sala, header=None)
     rzad = int(input("Podaj rzad miejsca ktorego chcesz zarezerwowac: "))-1
     nr_miejsca = int(input("Podaj numer miejsca ktore chcesz zarezerwowac: "))-1
 
-    if miejsca[rzad][nr_miejsca] == 0:
-        miejsca[rzad][nr_miejsca] = 1
-        print(f"Zarezerwowano miejsce {nr_miejsca+1} w rzedzie {rzad+1}")
-        
-        with open(sala, mode='w', newline="", encoding="utf-8") as plik:
-            writer = csv.writer(plik)
-            writer.writerows(miejsca)
+    if 0 <= rzad < df.shape[0] and 0 <= nr_miejsca < df.shape[1]:
+        if miejsca[rzad][nr_miejsca] == 0:
+            miejsca[rzad][nr_miejsca] = 1
+            print(f"Zarezerwowano miejsce {nr_miejsca+1} w rzedzie {rzad+1}")
+            
+            with open(sala, mode='w', newline="", encoding="utf-8") as plik:
+                writer = csv.writer(plik)
+                writer.writerows(miejsca)
+        else:
+            print(f"Miejsce {nr_miejsca+1} w rzedzie {rzad+1} jest zajete")
     else:
-        print(f"Miejsce {nr_miejsca+1} w rzedzie {rzad+1} jest zajete")
+        print("Podałeś błędne miejsca")
 
 while True:
     print("Opcje: [w = więcej opcji] / [z = zakończ]")
     opcja = str(input("Wybierz opcje: "))
 
     if opcja == 'w':
+        print("\n" + "-"*40)
         print("Opcje do wybrania:")
         print("- s (wyswietla sale do wybrania) ")
         print("- m (wyswietla miejsca na sali) ")
         print("- r (rezerwacja miejsca) ")
+        print("- z (zakoncz program) ")
+        print("-"*40 + "\n")
         opcja2 = str(input("Wybierz opcje: "))
         match opcja2:
             case "s":
@@ -100,10 +109,14 @@ while True:
                     print("Brak sal do wybrania ;(")
             case "m": 
                 sala = wybierzSale()
-                miejsca = odczytPliku(sala)
-                wyswietlMiejsca(miejsca, plik=sala)
+                if sala != None:
+                    miejsca = odczytPliku(sala)
+                    wyswietlMiejsca(miejsca, plik=sala)
             case "r":
                 rezerwujMiejsce()
+            case "z":
+                print("Zakonczono program")
+                break
             case _:
                 print("Błędna opcja")
 
