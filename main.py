@@ -1,12 +1,65 @@
 import os, csv
 import pandas as pd
 
+def stworzNowaSale():
+    nowa_sala = []
+    print("\n" + "-"*40)
+    rzedy = int(input("Podaj ile rzędów ma miec sala: "))
+    miejsca = int(input("Podaj ile miejsc ma byc w rzędzie: "))
+
+    opcja = str(input("Czy sala ma być pusta? (tak/nie) - w przeciwnym wypadku miejsca bedzie trzeba samemu wypelnic: "))
+    if opcja == "tak" or opcja == "nie":
+        if opcja == "tak":
+            nowa_sala = [[0 for _ in range(miejsca)] for _ in range(rzedy)]
+        elif opcja == "nie":
+            nowa_sala = [[0 for _ in range(miejsca)] for _ in range(rzedy)]
+            print("Wolne - 0 | Zajete - 1")
+            for i in range(rzedy):
+                for j in range(miejsca):
+                    wybor = int(input(f'Podaj wartosc {j+1} miejsca z rzedu {i+1}: '))
+                    nowa_sala[i][j] = wybor
+        print("\n" + "-"*40)
+        print("Rozkład miejsc w twojej sali: ")
+        for row in nowa_sala:
+            print(row)
+    else:
+        print("Błędna opcja")
+
+    aktualne_sale = zbierzInfoSale()
+    nazwa_pliku = "sala.csv"
+    sukces = False
+    nr = 1
+    while sukces == False:
+        nazwa_pliku = f"sala{str(nr)}.csv"
+        if nazwa_pliku in aktualne_sale:
+            nr = nr + 1
+        else: 
+            sukces = True
+    
+    pewne = str(input(f"Czy na pewno chcesz stworzyc nową sale (sala {nr}) (tak/nie): "))
+    komunikat = ""
+    if pewne == "tak":
+        if nazwa_pliku in aktualne_sale:
+            komunikat = "Wystąpił bład przy tworzeniu sali"
+            return False, komunikat
+        else:
+            with open(nazwa_pliku, mode="w", newline="", encoding="utf-8") as plik:
+                writer = csv.writer(plik)
+                writer.writerows(nowa_sala)
+            return True, komunikat
+    elif pewne == "nie":
+        komunikat = "Zdecydowano sie nie tworzyc sali"
+        return False, komunikat
+    else:
+        komunikat = "Wybrano błędna wartość"
+        return False, komunikat
+
 def zbierzInfoSale():
     sale_info = []
 
-    for dirpath, _, filenames in os.walk('.'):
+    for dirpath, _, filenames in os.walk("."):
         for file in filenames:
-            if file.endswith('.csv'):
+            if file.endswith(".csv"):
                 sale_info.append(file)
     
     if len(sale_info) != 0:
@@ -92,6 +145,7 @@ while True:
         print("- s (wyswietla sale do wybrania) ")
         print("- m (wyswietla miejsca na sali) ")
         print("- r (rezerwacja miejsca) ")
+        print("- n (stworz nowa sale) ")
         print("- z (zakoncz program) ")
         print("-"*40 + "\n")
         opcja2 = str(input("Wybierz opcje: "))
@@ -114,6 +168,13 @@ while True:
                     wyswietlMiejsca(miejsca, plik=sala)
             case "r":
                 rezerwujMiejsce()
+            case "n":
+                sukces, komunikat = stworzNowaSale()
+                if sukces:
+                    print("\n" + "-"*40)
+                    print("Pomyślnie utworzono nową sale")
+                else:
+                    print(f"Nie utworzono sali, komunikat: {komunikat}")
             case "z":
                 print("Zakonczono program")
                 break
