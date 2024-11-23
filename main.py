@@ -27,31 +27,37 @@ def stworzNowaSale():
 
     aktualne_sale = zbierzInfoSale()
     nazwa_pliku = "sala.csv"
-    sukces = False
     nr = 1
-    while sukces == False:
-        nazwa_pliku = f"sala{str(nr)}.csv"
-        if nazwa_pliku in aktualne_sale:
-            nr = nr + 1
-        else: 
-            sukces = True
-    
-    pewne = str(input(f"Czy na pewno chcesz stworzyc nową sale (sala {nr}) (tak/nie): "))
+    pewne = str(input(f"Czy na pewno chcesz stworzyc nową sale (tak/nie): "))
     komunikat = ""
     if pewne == "tak":
-        if nazwa_pliku in aktualne_sale:
-            komunikat = "Wystąpił bład przy tworzeniu sali"
-            return False, komunikat
-        else:
+        if aktualne_sale == None:
             with open(nazwa_pliku, mode="w", newline="", encoding="utf-8") as plik:
                 writer = csv.writer(plik)
                 writer.writerows(nowa_sala)
             return True, komunikat
+        else:
+            sukces = False
+            while sukces == False:
+                nazwa_pliku = f"sala{str(nr)}.csv"
+                if nazwa_pliku in aktualne_sale:
+                    nr = nr + 1
+                else: 
+                    sukces = True
+            
+            if nazwa_pliku in aktualne_sale:
+                komunikat = "Wystąpił bład przy tworzeniu sali"
+                return False, komunikat
+            else:
+                with open(nazwa_pliku, mode="w", newline="", encoding="utf-8") as plik:
+                    writer = csv.writer(plik)
+                    writer.writerows(nowa_sala)
+                return True, komunikat
     elif pewne == "nie":
-        komunikat = "Zdecydowano sie nie tworzyc sali"
+        komunikat = "Zdecydowano sie nie tworzyc nowej sali"
         return False, komunikat
     else:
-        komunikat = "Wybrano błędna wartość"
+        komunikat = "Wpisano błędną opcje"
         return False, komunikat
 
 def zbierzInfoSale():
