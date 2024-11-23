@@ -60,6 +60,30 @@ def stworzNowaSale():
         komunikat = "Wpisano błędną opcje"
         return False, komunikat
 
+def usunSale():
+    sale = zbierzInfoSale()
+    komunikat = ""
+    if sale != None:
+        sala = wybierzSale()
+        if sala != None:
+            if sala in sale:
+                try:
+                    os.remove(sala)
+                    return True, komunikat
+                except FileNotFoundError:
+                    komunikat = "Nie znaleziono takiej sali!"
+                    return False, komunikat
+            else:
+                komunikat = "Nie znaleziono takiej sali!"
+                return False, komunikat
+        else:
+            komunikat = "Wybrano sale której nie ma"
+            return False, komunikat
+    else:
+        komunikat = "Brak sali do wybrania"
+        return False, komunikat
+    
+
 def zbierzInfoSale():
     sale_info = []
 
@@ -152,6 +176,7 @@ while True:
         print("- m (wyswietla miejsca na sali) ")
         print("- r (rezerwacja miejsca) ")
         print("- n (stworz nowa sale) ")
+        print("- u (usun sale) ")
         print("- z (zakoncz program) ")
         print("-"*40 + "\n")
         opcja2 = str(input("Wybierz opcje: "))
@@ -181,6 +206,13 @@ while True:
                     print("Pomyślnie utworzono nową sale")
                 else:
                     print(f"Nie utworzono sali, komunikat: {komunikat}")
+            case "u":
+                sukces, komunikat = usunSale()
+                if sukces:
+                    print("\n" + "-"*40)
+                    print("Pomyślnie usunięto sale")
+                else:
+                    print(f"Nie usunięto sali, komunikat: {komunikat}")
             case "z":
                 print("Zakonczono program")
                 break
