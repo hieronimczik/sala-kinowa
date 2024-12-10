@@ -1,6 +1,11 @@
 import os, csv
 import pandas as pd
 
+def aktualizujPlik(plik, zawartosc):
+    with open(plik, mode="w", newline="", encoding="utf-8") as file:
+        writer = csv.writer(file)
+        writer.writerows(zawartosc)
+
 def stworzNowaSale():
     nowa_sala = []
     print("\n" + "-"*40)
@@ -83,6 +88,45 @@ def usunSale():
         komunikat = "Brak sali do wybrania"
         return False, komunikat
     
+def zmianaMiejscSali():
+    komunikat = ""
+    sala_plik = wybierzSale()
+    if sala_plik != None:
+        sala = odczytPliku(sala_plik)
+        wyswietlMiejsca(sala, plik=sala_plik)
+
+        df = pd.read_csv(sala_plik, header=None)
+        rzedy = df.shape[0]
+        miejsca = df.shape[1]
+        rzad = int(input(f"Podaj rzad z ktorego chcesz cos zmienic  (1-{rzedy}): "))-1
+        miejsce = int(input(f"Podaj miejsce ktore chcesz zmienić (1-{miejsca}): "))-1
+        try: 
+            opcja = input("Podaj opcje (zwolnij/zajmij)")
+            if opcja.lower() == "zwolnij":
+                if sala[rzad][miejsce] == 0:
+                    komunikat = "Miejsce ktore chcesz zmienic ma juz taka wartosc"
+                    return False, komunikat
+                else:
+                    sala[rzad][miejsce] = 0
+                    aktualizujPlik(sala_plik, sala)
+                    return True, komunikat
+            elif opcja.lower() == "zajmij":
+                if sala[rzad][miejsce] == 1:
+                    komunikat = "Miejsce ktore chcesz zwolnic ma juz taka wartosc"
+                    return False, komunikat
+                else:
+                    sala[rzad][miejsce] = 1
+                    aktualizujPlik(sala_plik, sala)
+                    return True, komunikat
+            else:
+                komunikat = "Wybrano bledna opcje"
+                return False, komunikat
+        except IndexError:
+            komunikat = "Wystąpił błąd"
+            return False, komunikat
+    else:
+        komunikat = "Brak sal do wybrania"
+        return False, komunikat
 
 def zbierzInfoSale():
     sale_info = []
@@ -174,6 +218,7 @@ while True:
         print("Opcje do wybrania:")
         print("- s (wyswietla sale do wybrania) ")
         print("- m (wyswietla miejsca na sali) ")
+        print("- zm (zmien miejsce na sali) ")
         print("- r (rezerwacja miejsca) ")
         print("- n (stworz nowa sale) ")
         print("- u (usun sale) ")
@@ -197,6 +242,13 @@ while True:
                 if sala != None:
                     miejsca = odczytPliku(sala)
                     wyswietlMiejsca(miejsca, plik=sala)
+            case "zm":
+                sukces, komunikat = zmianaMiejscSali()
+                if sukces: 
+                    print("\n" + "-"*40)
+                    print("Pomyślnie zmieniono wartosci")
+                else:
+                    print(f"Operacja nie powiodła sie, komunikat: {komunikat}")
             case "r":
                 rezerwujMiejsce()
             case "n":
