@@ -1,5 +1,8 @@
 import os, csv
 import pandas as pd
+import tkinter as tk
+from tkinter import ttk
+from PIL import Image, ImageTk
 
 def aktualizujPlik(plik, zawartosc):
     with open(plik, mode="w", newline="", encoding="utf-8") as file:
@@ -209,70 +212,106 @@ def rezerwujMiejsce():
     else:
         print("Podałeś błędne miejsca")
 
-while True:
-    print("Opcje: [w = więcej opcji] / [z = zakończ]")
-    opcja = str(input("Wybierz opcje: "))
 
-    if opcja == 'w':
-        print("\n" + "-"*40)
-        print("Opcje do wybrania:")
-        print("- s (wyswietla sale do wybrania) ")
-        print("- m (wyswietla miejsca na sali) ")
-        print("- zm (zmien miejsce na sali) ")
-        print("- r (rezerwacja miejsca) ")
-        print("- n (stworz nowa sale) ")
-        print("- u (usun sale) ")
-        print("- z (zakoncz program) ")
-        print("-"*40 + "\n")
-        opcja2 = str(input("Wybierz opcje: "))
-        match opcja2:
-            case "s":
-                sale = zbierzInfoSale()
-                if sale != None:
-                    print("")
-                    print("------")
-                    print("Sale do wybrania:")
-                    for i in range(len(sale)):
-                        print(f"- sala {i+1}")
-                    print()
-                else:
-                    print("Brak sal do wybrania ;(")
-            case "m": 
-                sala = wybierzSale()
-                if sala != None:
-                    miejsca = odczytPliku(sala)
-                    wyswietlMiejsca(miejsca, plik=sala)
-            case "zm":
-                sukces, komunikat = zmianaMiejscSali()
-                if sukces: 
-                    print("\n" + "-"*40)
-                    print("Pomyślnie zmieniono wartosci")
-                else:
-                    print(f"Operacja nie powiodła sie, komunikat: {komunikat}")
-            case "r":
-                rezerwujMiejsce()
-            case "n":
-                sukces, komunikat = stworzNowaSale()
-                if sukces:
-                    print("\n" + "-"*40)
-                    print("Pomyślnie utworzono nową sale")
-                else:
-                    print(f"Nie utworzono sali, komunikat: {komunikat}")
-            case "u":
-                sukces, komunikat = usunSale()
-                if sukces:
-                    print("\n" + "-"*40)
-                    print("Pomyślnie usunięto sale")
-                else:
-                    print(f"Nie usunięto sali, komunikat: {komunikat}")
-            case "z":
-                print("Zakonczono program")
-                break
-            case _:
-                print("Błędna opcja")
+#strefa tkinter
 
-    elif opcja == 'z':
-        print("Zakonczono program")
-        break 
-    else: 
-        print("Wpisano nie prawidłową opcje")
+def pokazSale(parent, title): 
+    nowe = tk.Toplevel(parent)
+    nowe.title(title)
+    nowe.geometry("600x400")
+
+    label = tk.Label(nowe, text=f"To jest {title}")
+    label.pack(pady=20)
+
+
+
+def przyciskiSalMain(parent):
+    sale = zbierzInfoSale()
+    for i in range(len(sale)):
+        button_sala = ttk.Button(parent, text=f"Sala {i+1}", command=lambda i=i: wykazSali(i))
+        button_sala.pack(pady=5, padx=5)
+
+def wykazSali(i):
+    nowe = tk.Toplevel(frame1)
+    nowe.title(f"Sala {i+1}")
+    nowe.geometry("600x400")
+    nowe.resizable(False, False) 
+
+    frame_main = tk.Frame(nowe)
+    frame_main.pack(fill="x", pady=10)
+
+    label_sala = tk.Label(frame_main, text=f"Wykaz miejsc na sali {i+1}", font=("Arial", 15))
+    label_sala.pack(pady=20)
+
+
+    frame_miejsca = tk.Frame(nowe)
+    frame_miejsca.pack(pady=20)
+
+    sale = zbierzInfoSale()
+    sala = sale[i]
+    df = pd.read_csv(sala, header=None)
+    rzedy = df.shape[0]
+    miejsca = df.shape[1]
+    
+    wolne = "seatw.png"
+    zajete = "seatz.png"
+
+    miejsca_img = []  
+    for r in range(rzedy):
+        for c in range(miejsca):
+            status = df.iloc[r, c]
+            img = wolne if status == 0 else zajete
+            image = Image.open(img)
+            image = image.resize((20, 20))  
+            photo = ImageTk.PhotoImage(image)
+            miejsca_img.append(photo) 
+            
+            miejsce_label = tk.Label(frame_miejsca, image=photo)
+            miejsce_label.grid(row=r, column=c, padx=2, pady=2)
+
+
+    frame_info = tk.Frame(nowe)
+    frame_info.pack(pady=20)
+    imgsw = Image.open(wolne)
+    imgsz = Image.open(zajete)
+    imgsw = imgsw.resize((40,40))
+    imgsz = imgsz.resize((40,40))
+
+    photo1 = ImageTk.PhotoImage(imgsw)
+    photo2 = ImageTk.PhotoImage(imgsz)
+
+    label_info1 = tk.Label(frame_info, image=photo1)
+    label_info2 = tk.Label(frame_info, text="- Wolne")
+    label_info3 = tk.Label(frame_info, image=photo2)
+    label_info4 = tk.Label(frame_info, text="- Zajęte")
+
+    label_info1.grid(row=0, column=0, padx=0, pady=5)
+    label_info2.grid(row=0, column=1, padx=0, pady=5)
+    label_info3.grid(row=0, column=2, padx=0, pady=5)
+    label_info4.grid(row=0, column=3, padx=0, pady=5)
+
+
+    frame_miejsca.image_references = miejsca_img
+    frame_info.image_references = [photo1, photo2]
+
+root = tk.Tk()
+root.title("Sala kinowa")
+root.geometry("1000x600")
+
+tabs = ttk.Notebook(root)
+tabs.pack(fill="both", expand=True)
+
+frame1 = ttk.Frame(tabs)
+tabs.add(frame1, text="Wykaz sal")
+
+label1 = tk.Label(frame1, text="Wybierz sale by pokazać miejsca", font=("Arial", 20))
+label1.pack(pady=20, padx=20)
+
+przyciskiSalMain(frame1)
+
+frame2 = ttk.Frame(root)
+tabs.add(frame2, text="Rezerwacja miejsca")
+
+
+root.mainloop()
+
